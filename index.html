@@ -29,12 +29,33 @@
             max-width: 1400px;
         }
 
+        #gameWrapper {
+            flex: 1;
+            max-width: 900px;
+            position: relative;
+        }
+
         #gameCanvas {
             border: 3px solid #00ff00;
             background: #001a4d;
             image-rendering: pixelated;
-            flex: 1;
-            max-width: 800px;
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        #radarContainer {
+            border: 3px solid #00ff00;
+            background: #0a0e27;
+            width: 100%;
+            height: 200px;
+            margin-top: 10px;
+        }
+
+        #radarCanvas {
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
         }
 
         #ui {
@@ -43,7 +64,8 @@
             padding: 20px;
             background: #0a0e27;
             overflow-y: auto;
-            max-height: 600px;
+            max-height: 900px;
+            font-size: 12px;
         }
 
         .ui-section {
@@ -63,7 +85,7 @@
             display: flex;
             justify-content: space-between;
             margin: 5px 0;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .stat-label {
@@ -84,7 +106,7 @@
             cursor: pointer;
             font-family: 'Courier New', monospace;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         button:hover {
@@ -97,36 +119,25 @@
             color: #999;
         }
 
-        .inventory-item {
+        .inventory-item, .monster-entry, .weapon-entry, .shop-item, .upgrade-item {
             background: #1a1a2e;
             padding: 8px;
             margin: 5px 0;
             border-left: 3px solid #00ff00;
-            font-size: 11px;
+            font-size: 10px;
+            line-height: 1.3;
         }
 
         .monster-entry {
-            background: #1a1a2e;
-            padding: 8px;
-            margin: 5px 0;
-            border-left: 3px solid #ff0000;
-            font-size: 11px;
+            border-left-color: #ff0000;
         }
 
         .weapon-entry {
-            background: #1a1a2e;
-            padding: 8px;
-            margin: 5px 0;
-            border-left: 3px solid #ffff00;
-            font-size: 11px;
+            border-left-color: #ffff00;
         }
 
-        .shop-item {
-            background: #1a1a2e;
-            padding: 8px;
-            margin: 5px 0;
-            border-left: 3px solid #00ffff;
-            font-size: 11px;
+        .shop-item, .upgrade-item {
+            border-left-color: #00ffff;
         }
 
         .warning {
@@ -138,7 +149,7 @@
         }
 
         #gameMode {
-            font-size: 14px;
+            font-size: 13px;
             margin-bottom: 10px;
             padding: 10px;
             background: #1a1a2e;
@@ -146,21 +157,41 @@
         }
 
         .controls-text {
-            font-size: 11px;
+            font-size: 10px;
             color: #888;
             margin-top: 10px;
             line-height: 1.4;
+        }
+
+        .depth-indicator {
+            padding: 5px;
+            background: #1a1a2e;
+            margin: 5px 0;
+            border-left: 3px solid #ff8800;
+        }
+
+        .cave-level {
+            color: #ff8800;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div id="gameContainer">
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="gameWrapper">
+            <canvas id="gameCanvas" width="900" height="600"></canvas>
+            <div id="radarContainer">
+                <canvas id="radarCanvas" width="900" height="200"></canvas>
+            </div>
+        </div>
         <div id="ui">
             <div id="gameMode">MODE: EXPLORING</div>
 
             <div class="ui-section">
-                <h2>Submarine</h2>
+                <h2>Submarine Status</h2>
+                <div class="depth-indicator">
+                    <span class="cave-level" id="caveLevelStat">Surface Zone</span>
+                </div>
                 <div class="stat">
                     <span class="stat-label">Depth:</span>
                     <span class="stat-value" id="depthStat">0m</span>
@@ -176,6 +207,10 @@
                 <div class="stat">
                     <span class="stat-label">Oxygen:</span>
                     <span class="stat-value" id="oxygenStat">100%</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Light Level:</span>
+                    <span class="stat-value" id="lightStat">100%</span>
                 </div>
                 <div class="stat">
                     <span class="stat-label">Current Sub:</span>
@@ -200,8 +235,8 @@
             </div>
 
             <div class="ui-section">
-                <h2>Inventory</h2>
-                <div id="inventoryList"></div>
+                <h2>Light Systems</h2>
+                <div id="lightUpgradeList"></div>
             </div>
 
             <div class="ui-section">
@@ -210,10 +245,16 @@
             </div>
 
             <div class="ui-section">
+                <h2>Weapon Upgrades</h2>
+                <div id="weaponUpgradeList"></div>
+            </div>
+
+            <div class="ui-section">
                 <h2>Actions</h2>
                 <button id="toggleInteriorBtn">Enter Interior (E)</button>
                 <button id="surfaceBtn">Surface/Return to Base (S)</button>
                 <button id="dockBtn">Dock with Station (D)</button>
+                <button id="toggleLightBtn">Toggle Light (L)</button>
             </div>
 
             <div class="ui-section">
@@ -226,11 +267,6 @@
                 <div id="weaponGuide"></div>
             </div>
 
-            <div class="ui-section">
-                <h2>Shop</h2>
-                <div id="shopList"></div>
-            </div>
-
             <div class="controls-text">
                 <strong>Controls:</strong><br>
                 ↑/↓ - Move Up/Down<br>
@@ -238,6 +274,7 @@
                 E - Enter/Exit Interior<br>
                 S - Surface<br>
                 D - Dock<br>
+                L - Toggle Light<br>
                 SPACE - Attack<br>
                 1-4 - Switch Weapon
             </div>
