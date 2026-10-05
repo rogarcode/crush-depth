@@ -3,80 +3,85 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Crush Depth</title>
+  <title>Crush Depth - Sub Interior</title>
   <style>
     :root {
-      --bg: #091421;
-      --panel: #0f1c2e;
-      --line: #42f5a8;
-      --text: #d9fff2;
-      --muted: #8bc9b0;
-      --warning: #ffb347;
-      --danger: #ff5d5d;
-      --gold: #ffd86b;
+      --bg: #060d18;
+      --panel: #0e1d2c;
+      --line: #57f3b2;
+      --line-2: #8ed6ff;
+      --hud: #dff9ff;
+      --muted: #9ad1c2;
+      --gold: #f7d66d;
+      --alert: #ff8f8f;
+      --warning: #ffbd59;
+      --dark: #08151f;
+      --room: #1d3752;
+      --room2: #18344a;
+      --seat: #e6c180;
+      --door: #d2eaf6;
+      --player: #eaf7ff;
     }
 
     * { box-sizing: border-box; }
 
-    body {
+    html, body {
       margin: 0;
-      min-height: 100vh;
-      background: #050d16;
-      color: var(--text);
+      height: 100%;
+      background: var(--bg);
+      color: var(--hud);
       font-family: "Courier New", monospace;
+    }
+
+    body {
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 18px;
+      padding: 20px;
     }
 
-    #gameContainer {
+    #layout {
+      width: min(1500px, 100%);
       display: flex;
       gap: 18px;
-      width: min(1400px, 100%);
       align-items: flex-start;
     }
 
-    #gamePanel {
-      flex: 1.2;
+    #gameWrap {
+      flex: 1.3;
       min-width: 0;
     }
 
-    #gameCanvas {
+    canvas {
       display: block;
       width: 100%;
-      max-width: 900px;
+      max-width: 920px;
       height: auto;
       border: 3px solid var(--line);
-      background: #061827;
+      background: #050d17;
       image-rendering: pixelated;
     }
 
     #radarCanvas {
-      display: block;
-      width: 100%;
-      max-width: 900px;
-      height: 180px;
-      border: 3px solid var(--line);
-      background: #030d18;
-      image-rendering: pixelated;
       margin-top: 12px;
+      height: 180px;
+      border-color: var(--line-2);
     }
 
     #sidePanel {
-      flex: 0.9;
-      min-width: 260px;
+      flex: 0.85;
+      min-width: 290px;
       background: var(--panel);
       border: 3px solid var(--line);
-      padding: 16px;
-      max-height: 880px;
+      padding: 14px;
+      max-height: 900px;
       overflow: auto;
     }
 
     .section {
-      border-bottom: 2px solid rgba(66, 245, 168, 0.6);
       padding-bottom: 12px;
       margin-bottom: 12px;
+      border-bottom: 2px solid rgba(87, 243, 178, 0.6);
     }
 
     .section:last-child {
@@ -86,7 +91,7 @@
     }
 
     h2 {
-      margin: 0 0 10px 0;
+      margin: 0 0 12px 0;
       font-size: 14px;
       letter-spacing: 1px;
       color: var(--line);
@@ -96,113 +101,96 @@
     .statRow {
       display: flex;
       justify-content: space-between;
-      gap: 8px;
+      gap: 10px;
       font-size: 12px;
       margin: 6px 0;
-      color: var(--text);
     }
 
     .label { color: var(--muted); }
-    .value { color: var(--warning); }
+    .value { color: var(--gold); }
 
-    .zone {
-      padding: 8px 10px;
-      border-left: 3px solid var(--warning);
-      background: rgba(255, 179, 71, 0.1);
+    .screen {
+      border: 2px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.02);
+      padding: 10px;
       font-size: 12px;
-      margin: 8px 0;
+      line-height: 1.5;
+      margin-top: 8px;
     }
 
-    .card {
-      background: rgba(255,255,255,0.02);
-      border-left: 3px solid var(--line);
-      padding: 8px 10px;
-      margin: 6px 0;
-      font-size: 11px;
-      line-height: 1.5;
+    .screen strong {
+      color: var(--line);
     }
 
     button {
       width: 100%;
+      margin: 6px 0;
       background: var(--line);
-      color: #01120d;
+      color: #04140d;
       border: none;
       padding: 8px 10px;
       font-family: inherit;
       font-size: 12px;
       font-weight: bold;
       cursor: pointer;
-      margin: 6px 0;
     }
 
-    button:hover { filter: brightness(1.06); }
+    button:hover {
+      filter: brightness(1.08);
+    }
 
     .controls {
+      line-height: 1.6;
       font-size: 11px;
       color: var(--muted);
-      line-height: 1.6;
+    }
+
+    #stationButtons {
+      display: grid;
+      gap: 4px;
     }
   </style>
 </head>
 <body>
-  <div id="gameContainer">
-    <div id="gamePanel">
-      <canvas id="gameCanvas" width="900" height="600"></canvas>
+  <div id="layout">
+    <div id="gameWrap">
+      <canvas id="gameCanvas" width="900" height="620"></canvas>
       <canvas id="radarCanvas" width="900" height="180"></canvas>
     </div>
 
     <aside id="sidePanel">
       <div class="section">
-        <h2>Submarine</h2>
-        <div class="zone" id="zoneLabel">Surface Shelf</div>
+        <h2>Sub Status</h2>
         <div class="statRow"><span class="label">Depth</span><span class="value" id="depthStat">0m</span></div>
         <div class="statRow"><span class="label">Hull</span><span class="value" id="hullStat">100%</span></div>
         <div class="statRow"><span class="label">Fuel</span><span class="value" id="fuelStat">100%</span></div>
         <div class="statRow"><span class="label">Oxygen</span><span class="value" id="oxygenStat">100%</span></div>
-        <div class="statRow"><span class="label">Light</span><span class="value" id="lightStat">100%</span></div>
-        <div class="statRow"><span class="label">Sub</span><span class="value" id="subStat">Scout</span></div>
+        <div class="statRow"><span class="label">Power</span><span class="value" id="powerStat">100%</span></div>
       </div>
 
       <div class="section">
-        <h2>Resources</h2>
-        <div class="statRow"><span class="label">Gold</span><span class="value" id="goldStat">0</span></div>
-        <div class="statRow"><span class="label">Scrap</span><span class="value" id="scrapStat">0</span></div>
-        <div class="statRow"><span class="label">Artifacts</span><span class="value" id="artifactStat">0</span></div>
+        <h2>Current Station</h2>
+        <div class="screen" id="stationScreen">
+          <strong>Helm</strong><br />
+          Piloting deck, central command seat.
+        </div>
+        <div id="stationButtons"></div>
       </div>
 
       <div class="section">
-        <h2>Ship Systems</h2>
-        <div id="upgradeList"></div>
-      </div>
-
-      <div class="section">
-        <h2>Weapons</h2>
-        <div id="weaponCard"></div>
-      </div>
-
-      <div class="section">
-        <h2>Action</h2>
-        <button id="toggleLightBtn" type="button">Toggle Light (L)</button>
-        <button id="surfaceBtn" type="button">Surface / Repair (S)</button>
-        <button id="dockBtn" type="button">Dock (D)</button>
-        <button id="interiorBtn" type="button">Interior (E)</button>
-      </div>
-
-      <div class="section">
-        <h2>Bestiary</h2>
-        <div id="monsterList"></div>
+        <h2>Log</h2>
+        <div class="screen" id="logBox">Launch sequence complete.</div>
       </div>
 
       <div class="section">
         <h2>Controls</h2>
         <div class="controls">
-          Arrow keys / WASD: move<br />
-          Space: fire weapon<br />
-          1-4: swap weapons<br />
-          L: light toggle<br />
-          D: dock<br />
-          S: surface/repair<br />
-          E: enter/leave interior
+          WASD / arrows: move<br />
+          E: sit/activate station<br />
+          Q: stand up / exit station<br />
+          1-4: swap active station<br />
+          SPACE: fire weapon<br />
+          L: toggle lights
         </div>
       </div>
     </aside>
@@ -602,180 +590,7 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-n
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-test
+	
+					
+						
+																																																																												
