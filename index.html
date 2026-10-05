@@ -1,278 +1,781 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crush Depth - Submarine Exploration Game</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crush Depth</title>
+  <style>
+    :root {
+      --bg: #091421;
+      --panel: #0f1c2e;
+      --line: #42f5a8;
+      --text: #d9fff2;
+      --muted: #8bc9b0;
+      --warning: #ffb347;
+      --danger: #ff5d5d;
+      --gold: #ffd86b;
+    }
 
-        body {
-            font-family: 'Courier New', monospace;
-            background: #0a0e27;
-            color: #00ff00;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
+    * { box-sizing: border-box; }
 
-        #gameContainer {
-            display: flex;
-            gap: 20px;
-            width: 100%;
-            max-width: 1400px;
-        }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #050d16;
+      color: var(--text);
+      font-family: "Courier New", monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 18px;
+    }
 
-        #gameWrapper {
-            flex: 1;
-            max-width: 900px;
-            position: relative;
-        }
+    #gameContainer {
+      display: flex;
+      gap: 18px;
+      width: min(1400px, 100%);
+      align-items: flex-start;
+    }
 
-        #gameCanvas {
-            border: 3px solid #00ff00;
-            background: #001a4d;
-            image-rendering: pixelated;
-            width: 100%;
-            height: auto;
-            display: block;
-        }
+    #gamePanel {
+      flex: 1.2;
+      min-width: 0;
+    }
 
-        #radarContainer {
-            border: 3px solid #00ff00;
-            background: #0a0e27;
-            width: 100%;
-            height: 200px;
-            margin-top: 10px;
-        }
+    #gameCanvas {
+      display: block;
+      width: 100%;
+      max-width: 900px;
+      height: auto;
+      border: 3px solid var(--line);
+      background: #061827;
+      image-rendering: pixelated;
+    }
 
-        #radarCanvas {
-            width: 100%;
-            height: 100%;
-            image-rendering: pixelated;
-        }
+    #radarCanvas {
+      display: block;
+      width: 100%;
+      max-width: 900px;
+      height: 180px;
+      border: 3px solid var(--line);
+      background: #030d18;
+      image-rendering: pixelated;
+      margin-top: 12px;
+    }
 
-        #ui {
-            flex: 1;
-            border: 3px solid #00ff00;
-            padding: 20px;
-            background: #0a0e27;
-            overflow-y: auto;
-            max-height: 900px;
-            font-size: 12px;
-        }
+    #sidePanel {
+      flex: 0.9;
+      min-width: 260px;
+      background: var(--panel);
+      border: 3px solid var(--line);
+      padding: 16px;
+      max-height: 880px;
+      overflow: auto;
+    }
 
-        .ui-section {
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #00ff00;
-        }
+    .section {
+      border-bottom: 2px solid rgba(66, 245, 168, 0.6);
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
 
-        .ui-section h2 {
-            font-size: 14px;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            color: #00ff00;
-        }
+    .section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
 
-        .stat {
-            display: flex;
-            justify-content: space-between;
-            margin: 5px 0;
-            font-size: 11px;
-        }
+    h2 {
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      letter-spacing: 1px;
+      color: var(--line);
+      text-transform: uppercase;
+    }
 
-        .stat-label {
-            color: #00ff00;
-        }
+    .statRow {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+      margin: 6px 0;
+      color: var(--text);
+    }
 
-        .stat-value {
-            color: #ffff00;
-        }
+    .label { color: var(--muted); }
+    .value { color: var(--warning); }
 
-        button {
-            width: 100%;
-            padding: 8px;
-            margin: 5px 0;
-            background: #00ff00;
-            color: #000;
-            border: none;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            font-size: 11px;
-        }
+    .zone {
+      padding: 8px 10px;
+      border-left: 3px solid var(--warning);
+      background: rgba(255, 179, 71, 0.1);
+      font-size: 12px;
+      margin: 8px 0;
+    }
 
-        button:hover {
-            background: #00cc00;
-        }
+    .card {
+      background: rgba(255,255,255,0.02);
+      border-left: 3px solid var(--line);
+      padding: 8px 10px;
+      margin: 6px 0;
+      font-size: 11px;
+      line-height: 1.5;
+    }
 
-        button:disabled {
-            background: #666;
-            cursor: not-allowed;
-            color: #999;
-        }
+    button {
+      width: 100%;
+      background: var(--line);
+      color: #01120d;
+      border: none;
+      padding: 8px 10px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 6px 0;
+    }
 
-        .inventory-item, .monster-entry, .weapon-entry, .shop-item, .upgrade-item {
-            background: #1a1a2e;
-            padding: 8px;
-            margin: 5px 0;
-            border-left: 3px solid #00ff00;
-            font-size: 10px;
-            line-height: 1.3;
-        }
+    button:hover { filter: brightness(1.06); }
 
-        .monster-entry {
-            border-left-color: #ff0000;
-        }
-
-        .weapon-entry {
-            border-left-color: #ffff00;
-        }
-
-        .shop-item, .upgrade-item {
-            border-left-color: #00ffff;
-        }
-
-        #gameMode {
-            font-size: 13px;
-            margin-bottom: 10px;
-            padding: 10px;
-            background: #1a1a2e;
-            border: 2px solid #00ff00;
-        }
-
-        .controls-text {
-            font-size: 10px;
-            color: #888;
-            margin-top: 10px;
-            line-height: 1.4;
-        }
-
-        .depth-indicator {
-            padding: 5px;
-            background: #1a1a2e;
-            margin: 5px 0;
-            border-left: 3px solid #ff8800;
-        }
-
-        .cave-level {
-            color: #ff8800;
-            font-weight: bold;
-        }
-    </style>
+    .controls {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+  </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <div id="gameWrapper">
-            <canvas id="gameCanvas" width="900" height="600"></canvas>
-            <div id="radarContainer">
-                <canvas id="radarCanvas" width="900" height="200"></canvas>
-            </div>
-        </div>
-        <div id="ui">
-            <div id="gameMode">MODE: EXPLORING</div>
-
-            <div class="ui-section">
-                <h2>Submarine Status</h2>
-                <div class="depth-indicator">
-                    <span class="cave-level" id="caveLevelStat">Surface Zone</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">Depth:</span>
-                    <span class="stat-value" id="depthStat">0m</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">Hull Integrity:</span>
-                    <span class="stat-value" id="hullStat">100%</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">Fuel:</span>
-                    <span class="stat-value" id="fuelStat">100%</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">Oxygen:</span>
-                    <span class="stat-value" id="oxygenStat">100%</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">Light Level:</span>
-                    <span class="stat-value" id="lightStat">100%</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">Current Sub:</span>
-                    <span class="stat-value" id="currentSubStat">Scout</span>
-                </div>
-            </div>
-
-            <div class="ui-section">
-                <h2>Resources</h2>
-                <div class="stat">
-                    <span class="stat-label">Gold:</span>
-                    <span class="stat-value" id="goldStat">0</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">Scrap Metal:</span>
-                    <span class="stat-value" id="scrapStat">0</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">Rare Artifacts:</span>
-                    <span class="stat-value" id="artifactStat">0</span>
-                </div>
-            </div>
-
-            <div class="ui-section">
-                <h2>Light Systems</h2>
-                <div id="lightUpgradeList"></div>
-            </div>
-
-            <div class="ui-section">
-                <h2>Equipped Weapon</h2>
-                <div id="weaponDisplay"></div>
-            </div>
-
-            <div class="ui-section">
-                <h2>Weapon Upgrades</h2>
-                <div id="weaponUpgradeList"></div>
-            </div>
-
-            <div class="ui-section">
-                <h2>Actions</h2>
-                <button id="toggleInteriorBtn" type="button">Enter Interior (E)</button>
-                <button id="surfaceBtn" type="button">Surface/Return to Base (S)</button>
-                <button id="dockBtn" type="button">Dock with Station (D)</button>
-                <button id="toggleLightBtn" type="button">Toggle Light (L)</button>
-            </div>
-
-            <div class="ui-section">
-                <h2>Monster Database</h2>
-                <div id="monsterList"></div>
-            </div>
-
-            <div class="ui-section">
-                <h2>Weapon Guide</h2>
-                <div id="weaponGuide"></div>
-            </div>
-
-            <div class="controls-text">
-                <strong>Controls:</strong><br>
-                ↑/↓ - Move Up/Down<br>
-                ←/→ - Move Left/Right<br>
-                E - Enter/Exit Interior<br>
-                S - Surface<br>
-                D - Dock<br>
-                L - Toggle Light<br>
-                SPACE - Attack<br>
-                1-4 - Switch Weapon
-            </div>
-        </div>
+  <div id="gameContainer">
+    <div id="gamePanel">
+      <canvas id="gameCanvas" width="900" height="600"></canvas>
+      <canvas id="radarCanvas" width="900" height="180"></canvas>
     </div>
 
-    <script defer src="game.js"></script>
+    <aside id="sidePanel">
+      <div class="section">
+        <h2>Submarine</h2>
+        <div class="zone" id="zoneLabel">Surface Shelf</div>
+        <div class="statRow"><span class="label">Depth</span><span class="value" id="depthStat">0m</span></div>
+        <div class="statRow"><span class="label">Hull</span><span class="value" id="hullStat">100%</span></div>
+        <div class="statRow"><span class="label">Fuel</span><span class="value" id="fuelStat">100%</span></div>
+        <div class="statRow"><span class="label">Oxygen</span><span class="value" id="oxygenStat">100%</span></div>
+        <div class="statRow"><span class="label">Light</span><span class="value" id="lightStat">100%</span></div>
+        <div class="statRow"><span class="label">Sub</span><span class="value" id="subStat">Scout</span></div>
+      </div>
+
+      <div class="section">
+        <h2>Resources</h2>
+        <div class="statRow"><span class="label">Gold</span><span class="value" id="goldStat">0</span></div>
+        <div class="statRow"><span class="label">Scrap</span><span class="value" id="scrapStat">0</span></div>
+        <div class="statRow"><span class="label">Artifacts</span><span class="value" id="artifactStat">0</span></div>
+      </div>
+
+      <div class="section">
+        <h2>Ship Systems</h2>
+        <div id="upgradeList"></div>
+      </div>
+
+      <div class="section">
+        <h2>Weapons</h2>
+        <div id="weaponCard"></div>
+      </div>
+
+      <div class="section">
+        <h2>Action</h2>
+        <button id="toggleLightBtn" type="button">Toggle Light (L)</button>
+        <button id="surfaceBtn" type="button">Surface / Repair (S)</button>
+        <button id="dockBtn" type="button">Dock (D)</button>
+        <button id="interiorBtn" type="button">Interior (E)</button>
+      </div>
+
+      <div class="section">
+        <h2>Bestiary</h2>
+        <div id="monsterList"></div>
+      </div>
+
+      <div class="section">
+        <h2>Controls</h2>
+        <div class="controls">
+          Arrow keys / WASD: move<br />
+          Space: fire weapon<br />
+          1-4: swap weapons<br />
+          L: light toggle<br />
+          D: dock<br />
+          S: surface/repair<br />
+          E: enter/leave interior
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script defer src="game.js"></script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+n
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+test
