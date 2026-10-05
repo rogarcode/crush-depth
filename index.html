@@ -140,14 +140,6 @@
             border-left-color: #00ffff;
         }
 
-        .warning {
-            color: #ff0000;
-        }
-
-        .success {
-            color: #00ff00;
-        }
-
         #gameMode {
             font-size: 13px;
             margin-bottom: 10px;
@@ -251,10 +243,10 @@
 
             <div class="ui-section">
                 <h2>Actions</h2>
-                <button id="toggleInteriorBtn">Enter Interior (E)</button>
-                <button id="surfaceBtn">Surface/Return to Base (S)</button>
-                <button id="dockBtn">Dock with Station (D)</button>
-                <button id="toggleLightBtn">Toggle Light (L)</button>
+                <button id="toggleInteriorBtn" type="button">Enter Interior (E)</button>
+                <button id="surfaceBtn" type="button">Surface/Return to Base (S)</button>
+                <button id="dockBtn" type="button">Dock with Station (D)</button>
+                <button id="toggleLightBtn" type="button">Toggle Light (L)</button>
             </div>
 
             <div class="ui-section">
@@ -281,6 +273,6 @@
         </div>
     </div>
 
-    <script src="game.js"></script>
+    <script defer src="game.js"></script>
 </body>
 </html>
