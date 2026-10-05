@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crush Depth - Submarine Exploration Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0e27;
+            color: #00ff00;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #gameContainer {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 1400px;
+        }
+
+        #gameCanvas {
+            border: 3px solid #00ff00;
+            background: #001a4d;
+            image-rendering: pixelated;
+            flex: 1;
+            max-width: 800px;
+        }
+
+        #ui {
+            flex: 1;
+            border: 3px solid #00ff00;
+            padding: 20px;
+            background: #0a0e27;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+
+        .ui-section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #00ff00;
+        }
+
+        .ui-section h2 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            color: #00ff00;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+
+        .stat-label {
+            color: #00ff00;
+        }
+
+        .stat-value {
+            color: #ffff00;
+        }
+
+        button {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            background: #00ff00;
+            color: #000;
+            border: none;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        button:hover {
+            background: #00cc00;
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            color: #999;
+        }
+
+        .inventory-item {
+            background: #1a1a2e;
+            padding: 8px;
+            margin: 5px 0;
+            border-left: 3px solid #00ff00;
+            font-size: 11px;
+        }
+
+        .monster-entry {
+            background: #1a1a2e;
+            padding: 8px;
+            margin: 5px 0;
+            border-left: 3px solid #ff0000;
+            font-size: 11px;
+        }
+
+        .weapon-entry {
+            background: #1a1a2e;
+            padding: 8px;
+            margin: 5px 0;
+            border-left: 3px solid #ffff00;
+            font-size: 11px;
+        }
+
+        .shop-item {
+            background: #1a1a2e;
+            padding: 8px;
+            margin: 5px 0;
+            border-left: 3px solid #00ffff;
+            font-size: 11px;
+        }
+
+        .warning {
+            color: #ff0000;
+        }
+
+        .success {
+            color: #00ff00;
+        }
+
+        #gameMode {
+            font-size: 14px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #1a1a2e;
+            border: 2px solid #00ff00;
+        }
+
+        .controls-text {
+            font-size: 11px;
+            color: #888;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="ui">
+            <div id="gameMode">MODE: EXPLORING</div>
+
+            <div class="ui-section">
+                <h2>Submarine</h2>
+                <div class="stat">
+                    <span class="stat-label">Depth:</span>
+                    <span class="stat-value" id="depthStat">0m</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Hull Integrity:</span>
+                    <span class="stat-value" id="hullStat">100%</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Fuel:</span>
+                    <span class="stat-value" id="fuelStat">100%</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Oxygen:</span>
+                    <span class="stat-value" id="oxygenStat">100%</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Current Sub:</span>
+                    <span class="stat-value" id="currentSubStat">Scout</span>
+                </div>
+            </div>
+
+            <div class="ui-section">
+                <h2>Resources</h2>
+                <div class="stat">
+                    <span class="stat-label">Gold:</span>
+                    <span class="stat-value" id="goldStat">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Scrap Metal:</span>
+                    <span class="stat-value" id="scrapStat">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Rare Artifacts:</span>
+                    <span class="stat-value" id="artifactStat">0</span>
+                </div>
+            </div>
+
+            <div class="ui-section">
+                <h2>Inventory</h2>
+                <div id="inventoryList"></div>
+            </div>
+
+            <div class="ui-section">
+                <h2>Equipped Weapon</h2>
+                <div id="weaponDisplay"></div>
+            </div>
+
+            <div class="ui-section">
+                <h2>Actions</h2>
+                <button id="toggleInteriorBtn">Enter Interior (E)</button>
+                <button id="surfaceBtn">Surface/Return to Base (S)</button>
+                <button id="dockBtn">Dock with Station (D)</button>
+            </div>
+
+            <div class="ui-section">
+                <h2>Monster Database</h2>
+                <div id="monsterList"></div>
+            </div>
+
+            <div class="ui-section">
+                <h2>Weapon Guide</h2>
+                <div id="weaponGuide"></div>
+            </div>
+
+            <div class="ui-section">
+                <h2>Shop</h2>
+                <div id="shopList"></div>
+            </div>
+
+            <div class="controls-text">
+                <strong>Controls:</strong><br>
+                ↑/↓ - Move Up/Down<br>
+                ←/→ - Move Left/Right<br>
+                E - Enter/Exit Interior<br>
+                S - Surface<br>
+                D - Dock<br>
+                SPACE - Attack<br>
+                1-4 - Switch Weapon
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
